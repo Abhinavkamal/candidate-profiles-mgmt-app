@@ -1,9 +1,23 @@
 version: "3"
+networks:
+  proxynet:
+    driver: bridge
+
 services:
-  postgres:
-    image: "postgres:latest"
+  db:
+    image: postgres:14.1-alpine
+    hostname: my_db
+    restart: always
     environment:
-      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '54321:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    networks:
+      - proxynet
   nginx:
     depends_on:
       - api
@@ -18,22 +32,47 @@ services:
     build:
       dockerfile: Dockerfile
       context: "./server"
+    depends_on:
+      - db
     volumes:
       - /app/node_modules
       - ./server:/app
     environment:
-      - PGUSER=postgres
-      - PGHOST=postgres
-      - PGDATABASE=postgres
-      - PGPASSWORD=postgres_password
-      - PGPORT=5432
+      NODE_ENV: production
+      DB_HOST: db
+      DB_PORT: 54321
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: postgres
+    ports:
+      - 3002:3002
+    links:
+      - db
+
+
   client:
     stdin_open: true
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - PORT=3001
     build:
       dockerfile: Dockerfile
       context: ./client
     volumes:
-      - /app/node_modules
       - ./client:/app
+    ports:
+      - 3001:3001
+  
+  # pgadmin4:
+  #   image: dpage/pgadmin4
+  #   links:
+  #     - db
+  #   environment:
+  #       - PGADMIN_DEFAULT_EMAIL=user@domain.com
+  #       - PGADMIN_DEFAULT_PASSWORD=postgres
+  #   ports:
+  #     - 19000:80
+
+volumes:
+  db:
+    driver: local
