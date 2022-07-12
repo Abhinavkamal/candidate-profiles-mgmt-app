@@ -1,0 +1,17 @@
+.DS_Store
+*.ipynb
+*.pyc
+mplog.setup
+*__pycache__
+*.ipynb_checkpoints
+*.xml
+.idea
+.idea/workspace.xml
+.idea/misc.xml
+.idea/workspace.xml
+.vscode
+.idea
+.python-version
+
+client/node_modules
+server/node_modules
