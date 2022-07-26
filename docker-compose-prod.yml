@@ -1,0 +1,10 @@
+services:
+  api:
+    image: profile-mgmt-app_api
+    ports:
+      - "3002:3002"
+
+  client:
+    image: profile-mgmt-app_client
+    ports:
+      - "3001:3001"
